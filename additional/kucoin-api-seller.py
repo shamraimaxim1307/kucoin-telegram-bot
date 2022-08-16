@@ -6,7 +6,6 @@ from kucoin.client import Trade
 from additional.balance.balance import get_valid_currencies
 from additional.secretdata.secretdata import Data
 from additional.alarm.alarm import recieve_alarm
-from additional.database.models import User, Api
 
 client_market = Market(Data.api_key, Data.api_secret, Data.api_passphrase)
 client_trade = Trade(Data.api_key, Data.api_secret, Data.api_passphrase)

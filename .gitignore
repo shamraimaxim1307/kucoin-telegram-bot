@@ -129,5 +129,4 @@ dmypy.json
 .pyre/
 
 # Remove secretdata from Git
-additional/secretdata
 /additional/secretdata/

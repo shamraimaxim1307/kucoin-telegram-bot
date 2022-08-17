@@ -1,7 +1,9 @@
 from peewee import SqliteDatabase, Model, CharField, ForeignKeyField
+from additional.secretdata.secretdata import Data
 
-db = SqliteDatabase(r'/home/shamraimaxim/Стільниця/kucoinproject/kucoin-api-seller('
-                    r'telegrambot)/additional/database/api.db')
+# If you want to create a database, change path in parentheses,
+# because I hide my path data into secretdata, that also hidden by .gitignore
+db = SqliteDatabase(Data.my_path)
 
 
 class User(Model):

@@ -10,5 +10,5 @@ If you want to interact with my bot, you will change data in kucointelegrambot.p
   <li>Enter API KuCoin Data</li>
   <li>Choose button "Start rolling currency"</li>
 </ul>
-After that, if you followed instructions bot will start working<br>
+After that, if you follow instructions bot will start working<br>
 But there is one drawback: If you want to cancel an order, cancel it by KuCoin App/Web-Site

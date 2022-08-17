@@ -6,9 +6,11 @@ from kucoin.client import Market
 from kucoin.client import Trade
 from additional.balance.balance import get_valid_currencies
 from additional.database.models import User, Api
+from additional.secretdata.secretdata import Data
 import telebot
-
-bot = telebot.TeleBot("API-KEY")
+# If you want to interact with bot edit data in parentheses, my API data is hidden by .gitignore
+# and don't forget change data in kucointelegrambot.py too
+bot = telebot.TeleBot(Data.api_tg_key)
 
 
 class CurrencyData:

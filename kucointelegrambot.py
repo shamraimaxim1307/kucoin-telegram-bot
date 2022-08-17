@@ -2,6 +2,7 @@ import logging
 
 from additional.kucoinseller import CurrencyData
 from additional.balance.balance import get_valid_currencies
+from additional.secretdata.secretdata import Data
 from aiogram import Bot, Dispatcher, executor, types
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
@@ -9,7 +10,9 @@ from aiogram.dispatcher import FSMContext
 from additional.database.models import User, Api
 import aiogram.utils.markdown as fmt
 
-bot = Bot('5731092165:AAF5lI0EkPKtXzaRAmJ4QTIq20Trb4Ga02I')
+# If you want to interact with bot edit data in parentheses, my API data is hidden by .gitignore
+# and don't forget change data in kucoinseller.py too
+bot = Bot(Data.api_tg_key)
 
 dp = Dispatcher(bot, storage=MemoryStorage())
 

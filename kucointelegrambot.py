@@ -10,6 +10,7 @@ from aiogram.dispatcher import FSMContext
 from additional.database.models import User, Api
 import aiogram.utils.markdown as fmt
 
+# !!! IMPORTANT !!!
 # If you want to interact with bot edit data in parentheses, my API data is hidden by .gitignore
 # and don't forget change data in kucoinseller.py too
 bot = Bot(Data.api_tg_key)

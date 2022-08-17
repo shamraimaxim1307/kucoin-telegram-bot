@@ -1,6 +1,7 @@
 from peewee import SqliteDatabase, Model, CharField, ForeignKeyField
 from additional.secretdata.secretdata import Data
 
+# !!! IMPORTANT !!!
 # If you want to create a database, change path in parentheses,
 # because I hide my path data into secretdata, that also hidden by .gitignore
 db = SqliteDatabase(Data.my_path)

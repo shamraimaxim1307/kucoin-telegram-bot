@@ -158,6 +158,8 @@ async def process_symbol_stop(message: types.Message, state: FSMContext):
         symbol_income_percent = float(data['symbol_income_percent']) / 100
         symbol_stop = float(data['symbol_stop']) / 100
         await state.finish()
+
+        # Create an instance of CurrencyData and put it in function start_rolling
         instance = CurrencyData(user_id, symbol_to_roll, symbol_income_percent, symbol_stop)
         await start_rolling(message, instance)
     else:

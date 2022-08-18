@@ -1,12 +1,16 @@
 import sys
 import time
-from os import getenv
 
+# Import KuCoin Python SDK Modules
 from kucoin.client import Market
 from kucoin.client import Trade
+
+# Import my local files for working with KuCoin API
 from additional.balance.balance import get_valid_currencies
 from additional.database.models import User, Api
 from additional.secretdata.secretdata import Data
+
+# Import pyTelegramBotAPI for non-asynchronicity bot
 import telebot
 
 # !!! IMPORTANT !!!

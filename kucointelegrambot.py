@@ -1,14 +1,18 @@
+# Import logging for log our errors
 import logging
 
-from additional.kucoinseller import CurrencyData
-from additional.balance.balance import get_valid_currencies
-from additional.secretdata.secretdata import Data
+# Import aiogram modules for working bot
 from aiogram import Bot, Dispatcher, executor, types
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.dispatcher import FSMContext
-from additional.database.models import User, Api
 import aiogram.utils.markdown as fmt
+
+# Import my local files for working with KuCoin API
+from additional.kucoinseller import CurrencyData
+from additional.balance.balance import get_valid_currencies
+from additional.secretdata.secretdata import Data
+from additional.database.models import User, Api
 
 # !!! IMPORTANT !!!
 # If you want to interact with bot edit data in parentheses, my API data is hidden by .gitignore
@@ -20,12 +24,14 @@ dp = Dispatcher(bot, storage=MemoryStorage())
 logging.basicConfig(level=logging.INFO)
 
 
+# ApiData is created for collecting data from user about KuCoin API
 class ApiData(StatesGroup):
     api_key = State()
     api_secret = State()
     api_passphrase = State()
 
 
+# StateCurrencyData is created for collecting data from user about rolling currency
 class StateCurrencyData(StatesGroup):
     user_id = ''
     symbol_to_roll = State()
@@ -39,6 +45,7 @@ async def cmd_start(message: types.Message):
     buttons = ['📈 | Start rolling currency', '🔑 | Set API Data', '⚙️ | Change API Data',
                '❓ | How to create an API on KuCoin']
     keyboard.add(*buttons)
+    # If the user is in our database we just greet them, otherwise we create the data in the database and greet
     if User.select().where(User.chat_id == message.chat.id):
         await message.reply(f'Hello, {fmt.hbold(message.chat.first_name)} {fmt.hbold(message.chat.last_name)}',
                             parse_mode=types.ParseMode.HTML,
@@ -50,6 +57,7 @@ async def cmd_start(message: types.Message):
         await message.reply(f'Hello, {fmt.hbold(message.chat.first_name)} {fmt.hbold(message.chat.last_name)}',
                             parse_mode=types.ParseMode.HTML,
                             reply_markup=keyboard)
+
 
 # TODO: Create command cancel that stop kucoin bot. Coming soon!
 # @dp.message_handler(commands='cancel')
@@ -64,12 +72,15 @@ async def cmd_start(message: types.Message):
 async def bot_answer(message: types.Message):
     user = User.get(User.chat_id == message.chat.id)
     if Api.select().where(Api.foreign_key == user):
+        # We get valid currencies and distribute each to an array cell,
+        # then output them on Telegram keyboard
         valid_currencies = get_valid_currencies()
         keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
         list_currencies = []
         for key in valid_currencies.keys():
             list_currencies.append(key)
         keyboard.add(*list_currencies)
+
         await StateCurrencyData.symbol_to_roll.set()
 
         await message.reply('If you want cancel action enter "/cancel"\n'
@@ -79,7 +90,7 @@ async def bot_answer(message: types.Message):
 
 
 @dp.message_handler(state=StateCurrencyData.symbol_to_roll)
-async def process_symbol_to_roll_key(message: types.Message, state: FSMContext):
+async def process_symbol_to_roll(message: types.Message, state: FSMContext):
     keyboard = types.ReplyKeyboardRemove()
     async with state.proxy() as data:
         data['symbol_to_roll'] = message.text
@@ -105,14 +116,8 @@ async def process_symbol_income_percent(message: types.Message, state: FSMContex
                             'Enter incoming percent of price you want to earn:')
 
 
-async def start_rolling():
-    instance = CurrencyData(StateCurrencyData.user_id, StateCurrencyData.symbol_to_roll,
-                            StateCurrencyData.symbol_income_percent, StateCurrencyData.symbol_stop)
-    instance.launch_bot()
-
-
 @dp.message_handler(state=StateCurrencyData.symbol_stop)
-async def process_symbol_income_percent(message: types.Message, state: FSMContext):
+async def process_symbol_stop(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
         data['symbol_stop'] = message.text
     if data['symbol_stop'].isdigit():
@@ -130,6 +135,12 @@ async def process_symbol_income_percent(message: types.Message, state: FSMContex
                             'Enter stop-order percent of price you want to stop order, if it is triggered:')
 
 
+async def start_rolling():
+    instance = CurrencyData(StateCurrencyData.user_id, StateCurrencyData.symbol_to_roll,
+                            StateCurrencyData.symbol_income_percent, StateCurrencyData.symbol_stop)
+    instance.launch_bot()
+
+
 @dp.message_handler(lambda message: message.text == '🔑 | Set API Data')
 async def bot_answer(message: types.Message):
     user = User.get(User.chat_id == message.chat.id)
@@ -142,6 +153,7 @@ async def bot_answer(message: types.Message):
                             'Enter your API key: ')
 
 
+# This is a handler created to cancel any operation requested from the user.
 @dp.message_handler(state='*', commands='cancel')
 async def cancel_handler(message: types.Message, state: FSMContext):
     current_state = await state.set_state()

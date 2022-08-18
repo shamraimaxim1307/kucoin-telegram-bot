@@ -59,6 +59,14 @@ async def cmd_start(message: types.Message):
                             reply_markup=keyboard)
 
 
+@dp.message_handler(lambda message: message.text == '❓ | How to create an API on KuCoin')
+async def bot_answer(message: types.Message):
+    link = 'https://www.kucoin.com/support/360015102174-How-to-Create-an-API#:~:text=Go%20to%20KuCoin.com%2C%20and,' \
+           'the%20function%20and%20IP%20restrictions '
+    await message.reply(f'{fmt.hide_link(link)}This site can help you with your issue\n'
+                        f'{fmt.hlink("CLICK HERE", link)}', parse_mode=types.ParseMode.HTML)
+
+
 # TODO: Create command cancel that stop kucoin bot. Coming soon!
 # @dp.message_handler(commands='cancel')
 # async def cmd_cancel(message: types.Message):
@@ -66,6 +74,8 @@ async def cmd_start(message: types.Message):
 #                             StateCurrencyData.symbol_income_percent, StateCurrencyData.symbol_stop)
 #     instance.cancel_orders()
 #     await message.reply('Cancelled by command!')
+
+# This is a handler created to cancel any operation requested from the user.
 
 
 @dp.message_handler(lambda message: message.text == '📈 | Start rolling currency')
@@ -87,6 +97,17 @@ async def bot_answer(message: types.Message):
                             'Choose valid currency: ', reply_markup=keyboard)
     else:
         await message.reply('ERROR: API not set. Choose "Set API Data" button')
+
+
+@dp.message_handler(state='*', commands='cancel')
+async def cancel_handler(message: types.Message, state: FSMContext):
+    current_state = await state.get_state()
+    if current_state is None:
+        return
+    logging.info(f'Cancelling state {current_state}')
+    await message.reply('Cancelled!')
+    await cmd_start(message)
+    await state.finish()
 
 
 @dp.message_handler(state=StateCurrencyData.symbol_to_roll)
@@ -153,18 +174,6 @@ async def bot_answer(message: types.Message):
                             'Enter your API key: ')
 
 
-# This is a handler created to cancel any operation requested from the user.
-@dp.message_handler(state='*', commands='cancel')
-async def cancel_handler(message: types.Message, state: FSMContext):
-    current_state = await state.set_state()
-    if current_state is None:
-        await message.reply('Cancelled!')
-        return
-    logging.info(f'Cancelling state {current_state}')
-    await message.reply('Cancelled!')
-    await state.finish()
-
-
 @dp.message_handler(state=ApiData.api_key)
 async def process_api_key(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
@@ -216,12 +225,9 @@ async def bot_answer(message: types.Message):
         await message.reply('Nothing to change!')
 
 
-@dp.message_handler(lambda message: message.text == '❓ | How to create an API on KuCoin')
+@dp.message_handler()
 async def bot_answer(message: types.Message):
-    link = 'https://www.kucoin.com/support/360015102174-How-to-Create-an-API#:~:text=Go%20to%20KuCoin.com%2C%20and,' \
-           'the%20function%20and%20IP%20restrictions '
-    await message.reply(f'{fmt.hide_link(link)}This site can help you with your issue\n'
-                        f'{fmt.hlink("CLICK HERE", link)}', parse_mode=types.ParseMode.HTML)
+    await message.reply("I don't understand you!")
 
 
 if __name__ == '__main__':

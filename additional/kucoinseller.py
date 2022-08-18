@@ -20,6 +20,7 @@ bot = telebot.TeleBot(Data.api_tg_key)
 
 
 class CurrencyData:
+
     def __init__(self, user_id, symbol_to_roll, symbol_income_percent, symbol_stop):
         self.user_id = user_id
         self.symbol_to_roll = symbol_to_roll + '-USDT'

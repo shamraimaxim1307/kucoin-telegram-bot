@@ -33,7 +33,6 @@ class ApiData(StatesGroup):
 
 # StateCurrencyData is created for collecting data from user about rolling currency
 class StateCurrencyData(StatesGroup):
-    user_id = ''
     symbol_to_roll = State()
     symbol_income_percent = State()
     symbol_stop = State()
@@ -57,6 +56,18 @@ async def cmd_start(message: types.Message):
         await message.reply(f'Hello, {fmt.hbold(message.chat.first_name)} {fmt.hbold(message.chat.last_name)}',
                             parse_mode=types.ParseMode.HTML,
                             reply_markup=keyboard)
+
+
+@dp.message_handler(commands='menu')
+async def cmd_menu(message: types.Message):
+    keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=1)
+    buttons = ['📈 | Start rolling currency', '🔑 | Set API Data', '⚙️ | Change API Data',
+               '❓ | How to create an API on KuCoin']
+    keyboard.add(*buttons)
+    await message.reply(f'Hello, {fmt.hbold(message.chat.first_name)} {fmt.hbold(message.chat.last_name)}.\n'
+                        f'{fmt.hbold("You are in main menu:")}',
+                        parse_mode=types.ParseMode.HTML,
+                        reply_markup=keyboard)
 
 
 @dp.message_handler(lambda message: message.text == '❓ | How to create an API on KuCoin')
@@ -106,7 +117,7 @@ async def cancel_handler(message: types.Message, state: FSMContext):
         return
     logging.info(f'Cancelling state {current_state}')
     await message.reply('Cancelled!')
-    await cmd_start(message)
+    await cmd_menu(message)
     await state.finish()
 
 
@@ -142,13 +153,13 @@ async def process_symbol_stop(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
         data['symbol_stop'] = message.text
     if data['symbol_stop'].isdigit():
-        StateCurrencyData.user_id = message.chat.id
-        StateCurrencyData.symbol_to_roll = data['symbol_to_roll']
-        StateCurrencyData.symbol_income_percent = float(data['symbol_income_percent']) / 100
-        StateCurrencyData.symbol_stop = float(data['symbol_stop']) / 100
+        user_id = message.chat.id
+        symbol_to_roll = data['symbol_to_roll']
+        symbol_income_percent = float(data['symbol_income_percent']) / 100
+        symbol_stop = float(data['symbol_stop']) / 100
         await state.finish()
-        await message.answer('Start rolling!')
-        await start_rolling()
+        instance = CurrencyData(user_id, symbol_to_roll, symbol_income_percent, symbol_stop)
+        await start_rolling(message, instance)
     else:
         await StateCurrencyData.symbol_stop.set()
 
@@ -156,10 +167,10 @@ async def process_symbol_stop(message: types.Message, state: FSMContext):
                             'Enter stop-order percent of price you want to stop order, if it is triggered:')
 
 
-async def start_rolling():
-    instance = CurrencyData(StateCurrencyData.user_id, StateCurrencyData.symbol_to_roll,
-                            StateCurrencyData.symbol_income_percent, StateCurrencyData.symbol_stop)
+async def start_rolling(message: types.Message, instance):
     instance.launch_bot()
+    # Output start menu keyboard
+    await cmd_menu(message)
 
 
 @dp.message_handler(lambda message: message.text == '🔑 | Set API Data')
